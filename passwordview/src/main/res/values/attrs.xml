@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PasswordView">
+        <attr name="pv_max_count" format="integer" />
+        <attr name="pv_circle_password" format="boolean" />
+        <attr name="pv_circle_size" format="reference" />
+        <attr name="pv_stroke_color" format="color" />
+        <attr name="pv_stroke_width" format="reference" />
+        <attr name="pv_frame_color" format="color" />
+        <attr name="pv_text_color" format="color" />
+        <attr name="pv_text_size" format="reference" />
+        <attr name="pv_space" format="reference" />
+        <attr name="pv_bg_color" format="color"/>
+    </declare-styleable>
+</resources>

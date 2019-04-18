@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFEBCD"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/main_activity_password_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="隐藏密码" />
+
+    <ysn.com.passwordview.PasswordView
+        android:id="@+id/main_activity_password_view"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="300dp"
+        android:background="@android:color/transparent"
+        android:digits="@string/pv_digits"
+        android:inputType="textPassword"
+        app:pv_circle_password="false"
+        app:pv_max_count="4" />
+</RelativeLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="pv_stroke_color">#ff0000</color>
+    <color name="pv_frame_color">#50000000</color>
+    <color name="pv_text_color">#FFFFFF</color>
+</resources>
