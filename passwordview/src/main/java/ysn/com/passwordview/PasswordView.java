@@ -9,6 +9,9 @@ import android.support.v7.widget.AppCompatEditText;
 import android.text.InputFilter;
 import android.util.AttributeSet;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * @Author yangsanning
  * @ClassName PasswordView
@@ -40,8 +43,20 @@ public class PasswordView extends AppCompatEditText {
     private int frameColor, textColor;
     private int textSize;
 
-    private int viewWidth;
-    private int viewHeight;
+    /**
+     * 光标相关
+     */
+    private int cursorColor;
+    private int cursorWidth, cursorHeight;
+    private int cursorTwinkleTime;
+    private boolean isCursorEnable, isCursorShowing;
+
+    private int viewWidth, viewHeight;
+
+    /**
+     * 计算每个密码框宽度
+     */
+    private int rectWidth;
 
     /**
      * 密码框
@@ -53,6 +68,7 @@ public class PasswordView extends AppCompatEditText {
     private Rect textRect;
 
     private Paint circlePaint;
+    private Paint cursorPaint;
 
     /**
      * 输入结束监听
@@ -60,11 +76,23 @@ public class PasswordView extends AppCompatEditText {
     private OnFinishListener mOnFinishListener;
     private char[] texts = new char[]{};
 
+    private Timer timer;
+    private TimerTask timerTask;
+
     public PasswordView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initAttrs(context, attrs);
         initPaint();
         initView();
+
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                isCursorShowing = !isCursorShowing;
+                postInvalidate();
+            }
+        };
+        timer = new Timer();
     }
 
     private void initAttrs(Context context, AttributeSet attrs) {
@@ -73,11 +101,16 @@ public class PasswordView extends AppCompatEditText {
         isCirclePassword = typedArray.getBoolean(R.styleable.PasswordView_pv_circle_password, false);
         circleSize = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_circle_size, 10);
         strokeColor = typedArray.getColor(R.styleable.PasswordView_pv_stroke_color, getResources().getColor(R.color.pv_stroke_color));
-        strokeWidth = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_stroke_width, 1);
+        strokeWidth = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_stroke_width, 2);
         frameColor = typedArray.getColor(R.styleable.PasswordView_pv_frame_color, getResources().getColor(R.color.pv_frame_color));
         textColor = typedArray.getColor(R.styleable.PasswordView_pv_text_color, getResources().getColor(R.color.pv_text_color));
         textSize = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_text_size, 60);
         space = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_space, 10);
+
+        cursorColor = typedArray.getColor(R.styleable.PasswordView_pv_text_color, getResources().getColor(R.color.pv_cursor_color));
+        cursorWidth = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_cursor_width, 2);
+        cursorTwinkleTime = typedArray.getInteger(R.styleable.PasswordView_pv_cursor_twinkle_time, 500);
+        isCursorEnable = typedArray.getBoolean(R.styleable.PasswordView_pv_cursor_enable, true);
 
         typedArray.recycle();
     }
@@ -107,6 +140,12 @@ public class PasswordView extends AppCompatEditText {
         circlePaint.setColor(textColor);
         circlePaint.setStyle(Paint.Style.FILL);
         circlePaint.setAntiAlias(true);
+
+        cursorPaint = new Paint();
+        cursorPaint.setColor(cursorColor);
+        cursorPaint.setStrokeWidth(cursorWidth);
+        cursorPaint.setStyle(Paint.Style.FILL);
+        cursorPaint.setAntiAlias(true);
     }
 
     private void initView() {
@@ -121,13 +160,13 @@ public class PasswordView extends AppCompatEditText {
         super.onSizeChanged(w, h, oldw, oldh);
         viewWidth = w;
         viewHeight = h;
+
+        rectWidth = (viewWidth - space * (maxCount - 1)) / maxCount;
+        cursorHeight = viewHeight / 2;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        // 计算每个密码框宽度
-        int rectWidth = (viewWidth - space * (maxCount - 1)) / maxCount;
-
         // 绘制密码框
         for (int i = 0; i < maxCount; i++) {
             frameRect.left = (rectWidth + space) * i + strokeWidth;
@@ -154,6 +193,13 @@ public class PasswordView extends AppCompatEditText {
                 canvas.drawText(text, cx, cy, textPaint);
             }
         }
+
+        if (isCursorEnable && isCursorShowing && texts.length != maxCount) {
+            int x = (rectWidth >> 1) + (rectWidth + space) * texts.length;
+            int startY = (viewHeight - cursorHeight) >> 1;
+            int stopY = startY + cursorHeight;
+            canvas.drawLine(x, startY, x, stopY, cursorPaint);
+        }
     }
 
     @Override
@@ -165,6 +211,19 @@ public class PasswordView extends AppCompatEditText {
         if (texts.length == maxCount && mOnFinishListener != null) {
             mOnFinishListener.onFinish(text.toString());
         }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        //cursorFlashTime为光标闪动的间隔时间
+        timer.scheduleAtFixedRate(timerTask, 0, cursorTwinkleTime);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        timer.cancel();
     }
 
     public void setCirclePassword(boolean circlePassword) {

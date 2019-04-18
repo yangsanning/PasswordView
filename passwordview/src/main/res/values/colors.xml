@@ -4,4 +4,5 @@
     <color name="pv_stroke_color">#ff0000</color>
     <color name="pv_frame_color">#50000000</color>
     <color name="pv_text_color">#FFFFFF</color>
+    <color name="pv_cursor_color">#00FF7F</color>
 </resources>

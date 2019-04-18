@@ -12,5 +12,9 @@
         <attr name="pv_text_size" format="reference" />
         <attr name="pv_space" format="reference" />
         <attr name="pv_bg_color" format="color"/>
+        <attr name="pv_cursor_color" format="color" />
+        <attr name="pv_cursor_width" format="reference" />
+        <attr name="pv_cursor_twinkle_time" format="integer" />
+        <attr name="pv_cursor_enable" format="boolean" />
     </declare-styleable>
 </resources>
