@@ -5,12 +5,10 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.InputFilter;
 import android.util.AttributeSet;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * @Author yangsanning
@@ -76,23 +74,21 @@ public class PasswordView extends AppCompatEditText {
     private OnFinishListener mOnFinishListener;
     private char[] texts = new char[]{};
 
-    private Timer timer;
-    private TimerTask timerTask;
+    private Handler cursorHandler = new Handler();
+    private Runnable cursorRunnable = new Runnable() {
+        @Override
+        public void run() {
+            isCursorShowing = !isCursorShowing;
+            postInvalidate();
+            cursorHandler.postDelayed(this, cursorTwinkleTime);
+        }
+    };
 
     public PasswordView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initAttrs(context, attrs);
         initPaint();
         initView();
-
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                isCursorShowing = !isCursorShowing;
-                postInvalidate();
-            }
-        };
-        timer = new Timer();
     }
 
     private void initAttrs(Context context, AttributeSet attrs) {
@@ -107,7 +103,7 @@ public class PasswordView extends AppCompatEditText {
         textSize = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_text_size, 60);
         space = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_space, 10);
 
-        cursorColor = typedArray.getColor(R.styleable.PasswordView_pv_text_color, getResources().getColor(R.color.pv_cursor_color));
+        cursorColor = typedArray.getColor(R.styleable.PasswordView_pv_cursor_color, getResources().getColor(R.color.pv_cursor_color));
         cursorWidth = typedArray.getDimensionPixelSize(R.styleable.PasswordView_pv_cursor_width, 2);
         cursorTwinkleTime = typedArray.getInteger(R.styleable.PasswordView_pv_cursor_twinkle_time, 500);
         isCursorEnable = typedArray.getBoolean(R.styleable.PasswordView_pv_cursor_enable, true);
@@ -216,14 +212,22 @@ public class PasswordView extends AppCompatEditText {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        //cursorFlashTime为光标闪动的间隔时间
-        timer.scheduleAtFixedRate(timerTask, 0, cursorTwinkleTime);
+        startCursor();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        timer.cancel();
+        stopCursor();
+    }
+
+    public void startCursor() {
+        stopCursor();
+        cursorHandler.post(cursorRunnable);
+    }
+
+    public void stopCursor() {
+        cursorHandler.removeCallbacks(cursorRunnable);
     }
 
     public void setCirclePassword(boolean circlePassword) {
